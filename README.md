@@ -82,7 +82,7 @@ With the SN74LVC2G17 solution, the controller can be powered off and it doesn't 
 
 On my scale, Quadrature A & B sit on pins 6 & 8 and ground is pin 2, so these 3 pins are tapped and used as input into the buffer.  The chip is powered by 3.3V from the controller, and the ground is shared.  Power (pin 7) is passed straight through, so the existing scale is still fed 5V.  For some reason, my scale also needs pin 5 to work, so that's passed straight through as well.
 
-![Don't make fun of my terrible solder job](images/scale-wired.png)
+![Don't make fun of my terrible solder job](images/scale-tap.png)
 
 ## GPIO pin map
 

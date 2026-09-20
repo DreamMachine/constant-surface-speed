@@ -1,21 +1,21 @@
 # CSS Controller
 
-A constant surface speed (CSS) controller for a metal lathe, built around an ESP32.
+A constant surface speed (CSS) controller for a metal lathe, built around an ESP32, tapping into your existing DRO scale and using the readings to control a VFD using modbus.
 
 
 ## What it does
 
-The controller keeps the cutting speed constant as the tool moves across the work.
+The controller keeps the cutting surface speed constant as the tool moves across the work.
 
-On a lathe, a fixed spindle RPM means the surface speed at the cutting edge changes with diameter. When facing a part from the rim toward the centre, the surface speed falls as the diameter shrinks. To hold it steady, the spindle has to speed up as the tool moves in. This controller does that automatically.
+On a lathe, a fixed spindle RPM means the surface speed at the cutting edge changes when the diameter changes.   This means that facing a part, instead of staying constant, the surface speed falls as the diameter shrinks and the cutting tool moves towards the centre of the part. To hold it steady, the spindle has to be told to speed up as the tool moves in. This is a feature on some of the newer lathes that you can buy but I've never seen a retro-fit product for this.
 
-It reads the cross-slide position from the lathe's magnetic scale, works out the current diameter, and sets the spindle RPM so the surface speed stays at the value the operator chose. It sends the speed commands to the variable frequency drive (VFD) over Modbus RTU.
+To get the current position, tt reads the cross-slide position from the lathe's magnetic DRO scale, works out the current diameter, and sets the spindle RPM so the surface speed of the cutting tool stays at a constant value.
 
-The operator sets a target surface speed in metres per minute. The controller handles the rest while cutting.
+The operator sets a target surface speed in metres per minute, and the controller handles the rest.
 
 ## How it works
 
-The design is feed-forward. It computes the RPM the cut needs and commands it, rather than measuring RPM and correcting.
+The design is feed-forward. It computes the RPM the cut needs and sends speed commands over modbus, rather than measuring RPM and correcting.
 
 The required spindle RPM is a direct calculation:
 
@@ -23,9 +23,9 @@ The required spindle RPM is a direct calculation:
 RPM = (surface speed x 1000) / (pi x diameter_mm)
 ```
 
-The controller knows the target surface speed because the operator sets it, and it measures the diameter from the scale. So it can work out the RPM directly. It does not need to read the actual RPM to do this.
+The controller knows the target surface speed because you set it before cutting, then it measures the diameter from the scale and from there works out the target RPM.
 
-The VFD already regulates the motor to whatever frequency it is given. A second speed loop in the ESP32 would react slower and could fight the drive. So the Hall RPM sensor is used for display and for a safety check, not for control.
+The VFD already regulates the motor to whatever frequency it is given. I've connected a hall RPM sensor is used for display and for a safety purposes, but it doesn't control the RPM directly.
 
 The control loop runs at 20 Hz. Each cycle it reads the scale, computes the diameter and target RPM, converts that to a VFD frequency, applies a slew-rate limit, and writes the setpoint over Modbus.
 
@@ -47,7 +47,7 @@ flowchart LR
 
     ESP --> DISP["ILI9341 display"]
     KEYPAD["VINKA 4x4 keypad"] --> ESP
-    ESP -.WiFi.-> PHONE["Phone / web dashboard"]
+    ESP -.WiFi.-> PHONE["web dashboard for debug"]
 
     PSU["24V isolated supply"] --> BUCK["LMR33630 buck<br/>24V to 3.3V"]
     BUCK --> ESP
@@ -72,14 +72,17 @@ flowchart LR
 | Rotary encoder | To be selected | Planned speed adjustment | Not yet integrated |
 | Reset button | Momentary pushbutton | Clears a Modbus fault | On GPIO13 |
 
-### Planned for the custom PCB
+### Reading from the existing DRO Scale
 
-| Component | Part | Role |
-|---|---|---|
-| Input eFuse | TI TPS26600 | Overcurrent, overvoltage, reverse polarity, and inrush protection on the 24V input |
-| RS485 protection | SM712 | Surge and ESD protection on A/B, sized for the RS485 -7V to +12V range |
-| Buck regulator | TI LMR33630A | 24V to 3.3V at 400 kHz, with an input EMI filter and a common-mode choke |
+![Scale tap schematic](images/scale-tap.svg)
 
+I wanted to be able to plug everything in without it impacting any of the existing DRO functionality.  I had a number of tries at this that I couldn't get working and even if I did, the solution would have needed to be powered on for the DRO to work.
+
+With the SN74LVC2G17 solution, the controller can be powered off and it doesn't impact the DRO.  The chip also buffers and converts the 5V scale voltage down to 3.3V that is safe for the ESP32 to consume.
+
+On my scale, Quadrature A & B sit on pins 6 & 8 and ground is pin 2, so these 3 pins are tapped and used as input into the buffer.  The chip is powered by 3.3V from the controller, and the ground is shared.  Power (pin 7) is passed straight through, so the existing scale is still fed 5V.  For some reason, my scale also needs pin 5 to work, so that's passed straight through as well.
+
+![Don't make fun of my terrible solder job](images/scale-wired.png)
 
 ## GPIO pin map
 

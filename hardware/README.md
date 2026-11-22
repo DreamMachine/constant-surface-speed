@@ -3,6 +3,11 @@
 
 This board started out as a perf board, and has gone through multiple iterations. An ESP32 reads the cross-slide scale and the spindle Hall sensor, runs the display, keypad and buttons, and commands the VFD over isolated RS485 (Modbus RTU).
 
+v0.4 Board
+<img width="2000" height="1500" alt="constant-surface-speed-0 4" src="https://github.com/user-attachments/assets/d8e0d61e-7cd5-4da0-8d7d-c815cd2dbcfd" />
+
+
+
 ## At a glance
 
 | | |
@@ -50,8 +55,3 @@ There is no USB port. Connect a 3.3 V USB-serial adapter to J11 (adapter RX to T
 - Dots mark the LED cathodes.
 - Use nylon screws in **H2 and H5**, which are next to the antenna. H1 is the plated chassis hole.
 - Don't run "Update Footprints from Library" in KiCad. It would undo footprint edits made on the board, including PS1's outline.
-
-## Files
-
-- `CSS_Main_Board.kicad_pro`, `.kicad_sch`, `.kicad_pcb`: the KiCad project.
-- `production/`: gerbers, BOM and placement file for JLCPCB.

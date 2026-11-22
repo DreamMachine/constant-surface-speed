@@ -74,13 +74,13 @@ flowchart LR
 
 ### Reading from the existing DRO Scale
 
-![Scale tap schematic](images/scale-tap.svg)
+![Scale tap schematic](images/isolated-scale-tap.svg)
 
 I wanted to be able to plug everything in without it impacting any of the existing DRO functionality.  I had a number of tries at this that I couldn't get working and even if I did, the solution would have needed to be powered on for the DRO to work.
 
-With the SN74LVC2G17 solution, the controller can be powered off and it doesn't impact the DRO.  The chip also buffers and converts the 5V scale voltage down to 3.3V that is safe for the ESP32 to consume.
+I also tried a SN74LVC2G17 chip, and the controller could be powered off and it doesn't impact the DRO display.  The chip also buffers and converts the 5V scale voltage down to 3.3V that is safe for the ESP32 to consume.  I had problems with differences in ground potential and sometimes the chip would work fine, other times it wouldn't.  I eventually moved to the CA-IS3720LS digital isolator.  This keeps the DRO input and the controller output completely isolated and fixed the noise problem.
 
-On my scale, Quadrature A & B sit on pins 6 & 8 and ground is pin 2, so these 3 pins are tapped and used as input into the buffer.  The chip is powered by 3.3V from the controller, and the ground is shared.  Power (pin 7) is passed straight through, so the existing scale is still fed 5V.  For some reason, my scale also needs pin 5 to work, so that's passed straight through as well.
+All pins are passed straight through to the existing DRO.  On my scale, Quadrature A & B sit on pins 6 & 8 are tapped and used as input into the buffer.  The chip is powered by 5V on the DRO side and 3.3V on the controller side.  
 
 ![Don't make fun of my terrible solder job](images/scale-tap.png)
 
@@ -88,22 +88,26 @@ On my scale, Quadrature A & B sit on pins 6 & 8 and ground is pin 2, so these 3 
 
 | GPIO | Function |
 |---|---|
-| 32 | Quadrature A |
-| 33 | Quadrature B |
+| 26 | Quadrature A |
+| 27 | Quadrature B |
 | 14 | Hall sensor |
-| 25 | Keypad SDA |
-| 26 | Keypad SCL |
-| 27 | Keypad INT |
-| 22 | Display SCK |
+| 32 | Keypad SDA |
+| 33 | Keypad SCL |
+| 25 | Keypad INT |
+| 18 | Display SCK |
 | 23 | Display MOSI |
 | 5 | Display CS |
-| 4 | Display DC |
-| 16 | Display RST |
-| 17 | Display BL |
-| 21 | RS485 TX (to transceiver DI) |
-| 19 | RS485 RX (from transceiver RO) |
-| 18 | RS485 DE/RE (direction) |
-| 13 | Reset button |
+| 19 | Display DC |
+| 21 | Display RST |
+| 22 | Display BL |
+| 17 | RS485 TX (to transceiver DI) |
+| 16 | RS485 RX (from transceiver RO) |
+| 4 | RS485 DE/RE (direction) |
+| 2 | Status LED |
+| 36 | CSS ON Button |
+| 39 | CSS OFF Button |
+| 34 | CSS Stop Button |
+| 35 | Toggle Screen Button |
 
 ## Power
 
@@ -195,17 +199,6 @@ Working:
 - Web dashboard and serial interface
 - Power supply, 24V to 3.3V
 
-In progress:
-
-- Shielding the scale cable
-- Custom PCB design
-- Rotary encoder interface
-
-## Known issues
-
-- **Hall RPM noisy below about 320 RPM.** The cause is coupled noise from the unshielded scale cable and the VFD. Testing showed the noise arrives at a fixed rate, so widening the debounce only moves the clean threshold and does not fix it. The plan is to shield the scale cable, route it away from the Hall and Modbus cables, and add the Schmitt buffer on the Hall line.
-- **The command-source handback can time out and switch back during deceleration** if a noisy link disturbs the status read. Cleaning up the cable noise should resolve it.
-
 
 ## History
 
@@ -216,3 +209,4 @@ This project went through a long hardware bring-up. Notable points:
 - Two MAX485 modules failed before the cause was traced to a dead module and a floating ground, after which the design moved to the ESD-protected SP3485EE.
 - An RS485 wiring error (RO, DI, and DE on the wrong GPIOs) caused a long silent-link fault that looked like noise.
 - The move to 3.3V-only logic removed the 5V rail and simplified level shifting across the board.
+- 2 revisions of custom PCBs for the tap board and main board.

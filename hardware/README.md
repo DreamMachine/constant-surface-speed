@@ -6,6 +6,8 @@ This board started out as a perf board, and has gone through multiple iterations
 v0.4 Board
 <img width="2000" height="1500" alt="constant-surface-speed-0 4" src="https://github.com/user-attachments/assets/d8e0d61e-7cd5-4da0-8d7d-c815cd2dbcfd" />
 
+Current (unpopulated) board
+<img width="2000" height="1500" alt="CSS1 0" src="https://github.com/user-attachments/assets/f7e2b094-9f60-4d0f-a36e-09eab0a9f6b8" />
 
 
 ## At a glance

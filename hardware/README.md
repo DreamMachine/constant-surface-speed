@@ -56,4 +56,3 @@ There is no USB port. Connect a 3.3 V USB-serial adapter to J11 (adapter RX to T
 - **L1** is square and fits four ways. Match its pin 1 dot. L3 has one too.
 - Dots mark the LED cathodes.
 - Use nylon screws in **H2 and H5**, which are next to the antenna. H1 is the plated chassis hole.
-- Don't run "Update Footprints from Library" in KiCad. It would undo footprint edits made on the board, including PS1's outline.
